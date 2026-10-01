@@ -35,8 +35,8 @@ class ProductUpdateResquest(BaseModel):
     
 class WebhookProduct(BaseModel):
     product_id: int = Field(gt=0, strict=True)
-    sku: str | None = Field(default=None, max_length=100, strict=True)
-    name: str | None = Field(default=None, max_length=255, strict=True)
+    sku: str | None = Field(max_length=100, strict=True)
+    name: str | None = Field(max_length=255, strict=True)
     is_active: StrictBool
 
     model_config = ConfigDict(extra="forbid")
