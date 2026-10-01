@@ -1,7 +1,13 @@
 from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.orm import Session
 from app.core.db import get_db
-from app.schemas import ProductCreateRequest, ProductResponse, ProductListResponse, PaginationMeta
+from app.schemas import (
+    ProductCreateRequest,
+    ProductUpdateResquest, 
+    ProductResponse, 
+    ProductListResponse, 
+    PaginationMeta,
+)
 from app.services.emulator_service import EmulatorService
 
 router = APIRouter(prefix="/v1/emulator", tags=["Emulator"])
@@ -41,4 +47,26 @@ def list_emulator_products(
             pageSize=pageSize,
             totalCount=total_count
         )
+    )
+    
+@router.get("/products/{product_id}", response_model=ProductResponse)
+def get_emulator_product_by_id(product_id: int, db: Session = Depends(get_db)):
+    product = EmulatorService.get_product_by_id(db, product_id)
+    return ProductResponse(
+        productId=product.product_id,
+        sku=product.sku,
+        productName=product.product_name,
+        isActive=product.is_active,
+        xCdmsVersion=product.source_version
+    )
+    
+@router.put("/product/{product_id}", response_model=ProductResponse)
+def update_emulator_product(product_id: int, payload: ProductUpdateResquest, db: Session = Depends(get_db)):
+    product = EmulatorService.update_product(db, product_id, payload)
+    return ProductResponse(
+        productId=product.product_id,
+        sku=product.sku,
+        productName=product.product_name,
+        isActive=product.is_active,
+        xCdmsVersion=product.source_version
     )

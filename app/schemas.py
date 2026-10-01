@@ -1,5 +1,5 @@
 from typing import Optional, List
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, Field, ConfigDict, StrictBool
 
 class ProductCreateRequest(BaseModel):
     sku: Optional[str] = Field(default=None, max_length=100)
@@ -25,3 +25,10 @@ class PaginationMeta(BaseModel):
 class ProductListResponse(BaseModel):
     data: List[ProductResponse]
     pagination: PaginationMeta
+    
+class ProductUpdateResquest(BaseModel):
+    sku: Optional[str] = Field(default=None, max_length=100)
+    product_name: Optional[str] = Field(default=None, max_length=255)
+    is_active: Optional[StrictBool] = None
+    
+    model_config = ConfigDict(extra="forbid") 
