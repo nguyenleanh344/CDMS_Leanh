@@ -49,3 +49,28 @@ class ProductWebhookPayload(BaseModel):
     product: WebhookProduct
 
     model_config = ConfigDict(extra="forbid")
+    
+    
+class SyncJobCreate(BaseModel):
+    page_size: int = Field(default=100, ge=1, le=100, strict=True)
+    max_products: int = Field(default=1000, ge=1, le=10000, strict=True)
+    
+    model_config= ConfigDict(extra="forbid")
+    
+class SyncJobResponse(BaseModel):
+    job_id: str
+    job_type:str
+    status:str
+    parameters: dict
+    input_complete:bool
+    attempt_count: int
+    error_code:str|None
+    error_message:str|None
+    total_count:int
+    success_count:int
+    duplicate_count:int
+    no_change_count:int
+    stale_count:int
+    conflict_count:int
+    failed_count:int
+    pending_count:int

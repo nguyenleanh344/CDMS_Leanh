@@ -18,7 +18,7 @@ def engine():
     url = os.getenv("TEST_DATABASE_URL")
     if not url:
         pytest.skip(
-            "Set TEST_DATABASE_URL to a migrated PostgreSQL cdms_test"
+            "Set TEST_DATABASE_URL to a migrated PostgreSQL CDMS_Test"
         )
 
     parsed = make_url(url)
@@ -27,7 +27,7 @@ def engine():
         or parsed.database != "CDMS_Test"
     ):
         pytest.fail(
-            "TEST_DATABASE_URL must target PostgreSQL cdms_test"
+            "TEST_DATABASE_URL must target PostgreSQL CDMS_Test"
         )
 
     test_engine = create_engine(url)
@@ -42,7 +42,7 @@ def engine():
                 )
             except Exception as exc:
                 pytest.fail(
-                    f"Run Alembic upgrade head on cdms_test first: {exc}"
+                    f"Run Alembic upgrade head on CDMS_Test first: {exc}"
                 )
 
         yield test_engine
