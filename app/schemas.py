@@ -1,4 +1,4 @@
-from typing import Optional, List
+from typing import Optional, List, Dict, Any, Literal
 from pydantic import BaseModel, Field, ConfigDict, StrictBool
 
 class ProductCreateRequest(BaseModel):
@@ -32,3 +32,20 @@ class ProductUpdateResquest(BaseModel):
     is_active: Optional[StrictBool] = None
     
     model_config = ConfigDict(extra="forbid") 
+    
+class WebhookProduct(BaseModel):
+    product_id: int = Field(gt=0, strict=True)
+    sku: str | None = Field(default=None, max_length=100, strict=True)
+    name: str | None = Field(default=None, max_length=255, strict=True)
+    is_active: StrictBool
+
+    model_config = ConfigDict(extra="forbid")
+
+
+class ProductWebhookPayload(BaseModel):
+    external_event_id: str = Field(min_length=1, max_length=128, strict=True)
+    event_type: Literal["PRODUCT_SNAPSHOT"]
+    source_version: int = Field(gt=0, strict=True)
+    product: WebhookProduct
+
+    model_config = ConfigDict(extra="forbid")

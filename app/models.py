@@ -186,3 +186,4 @@ class ProductCurrent(Base):
     last_change_id = Column(UUID(as_uuid=True), nullable=False)
     created_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
     observed_at = Column(DateTime(timezone=True), nullable=False)
+    
