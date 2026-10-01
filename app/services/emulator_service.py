@@ -30,7 +30,7 @@ class EmulatorService:
         offset = (page_index - 1) * page_size
         query = db.query(EmulatorProduct)
         total_count = query.count()
-        products = query.offset(offset).limit(page_size).all()
+        products = query.order_by(EmulatorProduct.product_id).offset(offset).limit(page_size).all()
         return products, total_count
     
     @staticmethod
