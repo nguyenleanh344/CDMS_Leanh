@@ -159,7 +159,13 @@ def test_all_invalid_and_empty_file(context):
     ("products.xlsx", xlsx(sheet="Other")),
     ("products.xlsx", xlsx(header=HEADER + ("extra",))),
     ("products.xlsx", b"x" * (5 * 1024 * 1024 + 1)),
-])
+],    ids=[
+        "wrong-extension",
+        "broken-workbook",
+        "wrong-sheet",
+        "wrong-header",
+        "oversized-file",
+    ],)
 def test_invalid_file_does_not_create_job_or_event(context, filename, content):
     db, api, _ = context
     before_jobs = db.query(ProcessingJob).filter_by(job_type="EXCEL").count()
