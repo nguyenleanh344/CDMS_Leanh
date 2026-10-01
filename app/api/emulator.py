@@ -60,7 +60,7 @@ def get_emulator_product_by_id(product_id: int, db: Session = Depends(get_db)):
         xCdmsVersion=product.source_version
     )
     
-@router.put("/product/{product_id}", response_model=ProductResponse)
+@router.put("/products/{product_id}", response_model=ProductResponse)
 def update_emulator_product(product_id: int, payload: ProductUpdateResquest, db: Session = Depends(get_db)):
     product = EmulatorService.update_product(db, product_id, payload)
     return ProductResponse(
