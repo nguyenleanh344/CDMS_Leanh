@@ -74,3 +74,34 @@ class SyncJobResponse(BaseModel):
     conflict_count:int
     failed_count:int
     pending_count:int
+    
+class ExcelImportAccepted(BaseModel):
+    batch_id: str
+    job_type: Literal["EXCEL"]
+    status: Literal["PENDING"]
+    total_count: int
+    status_url: str
+
+
+class ExcelImportStatus(BaseModel):
+    batch_id: str
+    job_type: Literal["EXCEL"]
+    status: str
+    file_name: str
+    input_complete: bool
+    total_count: int
+    success_count: int
+    duplicate_count: int
+    no_change_count: int
+    stale_count: int
+    conflict_count: int
+    failed_count: int
+    pending_count: int
+
+
+class ExcelRowError(BaseModel):
+    item_index: int
+    status: str
+    error_code: str | None
+    error_message: str | None
+    raw_payload: dict
