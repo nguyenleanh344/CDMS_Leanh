@@ -1,11 +1,11 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
-    # Khai báo các biến môi trường của bạn ở đây, ví dụ kết nối Database
-    DATABASE_URL: str = "postgresql://user:password@localhost:5432/dbname"
     
-    # Cấu hình để đọc file .env nếu có
+    DATABASE_URL: str = "postgresql://user:password@localhost:5432/dbname"
+    INVENTORY_BASE_URL: str = "http://127.0.0.1:8000"
+    
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
-# Khởi tạo đối tượng settings để các module khác import vào dùng
+
 settings = Settings()
