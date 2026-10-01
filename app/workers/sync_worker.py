@@ -1,18 +1,27 @@
+import logging
+import time
 import uuid
+from contextlib import contextmanager
 from datetime import datetime, timedelta, timezone
+from typing import Callable
 
+from fastapi import HTTPException
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from app.clients.inventory_client import InventoryClient, InventoryError
-from app.core.db import SessionLocal
+from app.core.config import settings
+from app.core.db import SessionLocal, engine
 from app.models import InboundEvent, ProcessingJob
+from app.schemas import SyncJobCreate
 from app.services.product_processor import ProductProcessor
 from app.services.sync_service import SyncService
 
 MAX_ATTEMPTS = 3
 LEASE = timedelta(hours=1)
-
+LOCK_NAMESPACE = 1128549716  # distinct from ProductProcessor's 1128549715
+LOCK_KEY = 1
+logger = logging.getLogger(__name__)
 
 def _mark_retry(db: Session, job: ProcessingJob, exc: Exception) -> None:
     job_id = job.job_id
@@ -125,5 +134,65 @@ def run_once(client: InventoryClient | None = None) -> bool:
         process_job(db, job, client or InventoryClient())
         return True
     
+@contextmanager
+def singleton_lock():
+    with engine.connect().execution_options(isolation_level="AUTOCOMMIT") as connection:
+        acquired = connection.exec_driver_sql(
+            "SELECT pg_try_advisory_lock(%s, %s)", (LOCK_NAMESPACE, LOCK_KEY)
+        ).scalar_one()
+        connection.rollback() 
+        if not acquired:
+            raise RuntimeError("Another sync worker already holds the scheduler lock")
+        try:
+            yield
+        finally:
+            try:
+                released = connection.exec_driver_sql(
+                    "SELECT pg_advisory_unlock(%s, %s)", (LOCK_NAMESPACE, LOCK_KEY)
+                ).scalar_one()
+                connection.rollback()
+                if not released:
+                    raise RuntimeError("Sync worker advisory lock was lost")
+            except Exception:
+                connection.invalidate()
+                raise
+
+
+def schedule_if_due(now: float, next_due: float) -> float:
+    if not settings.POLLING_ENABLED or now < next_due:
+        return next_due
+    with SessionLocal() as db:
+        try:
+            job = SyncService.create(db, SyncJobCreate())
+            logger.info("Created scheduled SYNC job %s", job.job_id)
+        except HTTPException as exc:
+            if exc.status_code != 409:
+                raise
+            logger.info("An active SYNC job exists; skipping this interval")
+    return now + settings.POLLING_INTERVAL_SECONDS
+
+
+def run_forever(
+    *,
+    clock: Callable[[], float] = time.monotonic,
+    sleeper: Callable[[float], None] = time.sleep,
+) -> None:
+    next_due = clock()  
+    while True:
+        now = clock()
+        next_due = schedule_if_due(now, next_due)
+        run_once()  
+        after_work = clock()
+        if after_work >= next_due:
+          
+            next_due = after_work + settings.POLLING_INTERVAL_SECONDS
+        sleeper(min(1.0, max(0.0, next_due - after_work)))
+
+
 if __name__ == "__main__":
-    run_once()
+    logging.basicConfig(level=logging.INFO)
+    try:
+        with singleton_lock():
+            run_forever()
+    except KeyboardInterrupt:
+        logger.info("Sync worker stopped")
