@@ -134,7 +134,6 @@ For the product ID captured above, the exact commands are:
 
 ```powershell
 python -m scripts.send_product_webhook --product-id $productId
-python -m scripts.send_product_webhook --product-id $productId
 ```
 
 Copy the returned event ID to inspect it:

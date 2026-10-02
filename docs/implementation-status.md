@@ -24,7 +24,6 @@
 - Default sync requests cap the scan at 1,000 products. This is not an unlimited full scan.
 - PROCESSING jobs use a one-hour lease before recovery selection.
 - Excel limits are 5 MiB and 10,000 data rows.
-- A polling scan is not an atomic source snapshot across all pages. Count consistency checks cannot detect every concurrent source modification.
 - Durable inbound records alone do not guarantee automatic recovery for every channel. A continuous webhook recovery loop is not implemented.
 - Authentication, production monitoring, deployment hardening, and production capacity validation are not claimed.
 
